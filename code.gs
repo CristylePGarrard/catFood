@@ -1,5 +1,7 @@
 const FOOD_SHEET_NAME = "food";
 const LOCATION_SHEET_NAME = "location";
+const CUISINE_SHEET_NAME = "cuisines";
+const REGION_SHEET_NAME = "regions";
 
 
 /**
@@ -20,6 +22,11 @@ function doGet() {
     const locationSheet =
       spreadsheet.getSheetByName(LOCATION_SHEET_NAME);
 
+    const cuisineSheet =
+      spreadsheet.getSheetByName(CUISINE_SHEET_NAME);
+
+    const regionSheet =
+      spreadsheet.getSheetByName(REGION_SHEET_NAME);
 
     if (!foodSheet) {
       throw new Error(
@@ -33,6 +40,17 @@ function doGet() {
       );
     }
 
+    if (!cuisineSheet) {
+      throw new Error(
+        `Could not find sheet: ${CUISINE_SHEET_NAME}`
+      );
+    }
+
+    if (!regionSheet) {
+     throw new Error(
+      `Could not find sheet: ${REGION_SHEET_NAME}`
+      );
+    }
 
     const foods =
       sheetToObjects(foodSheet);
@@ -40,6 +58,11 @@ function doGet() {
     const locations =
       sheetToObjects(locationSheet);
 
+    const cuisines =
+      sheetToObjects(cuisineSheet);
+
+    const regions =
+      sheetToObjects(regionSheet);
 
     /*
      * Turn locations into a lookup object.
@@ -63,6 +86,20 @@ function doGet() {
 
     });
 
+    const cuisinesById = {};
+    cuisines.forEach(cuisine => {
+      if (cuisine.id !== "") {
+        cuisinesById[String(cuisine.id)] =
+          cuisine;
+      }
+    });
+    const regionsById = {};
+    regions.forEach(region => {
+      if (region.id !== "") {
+        regionsById[String(region.id)] =
+          region;
+      }
+    });
 
     /*
      * Build the JSON structure used by the website.
@@ -77,6 +114,15 @@ function doGet() {
               String(food.locationID)
             ] || null;
 
+          const cuisine =
+            cuisinesById[
+              String(food.cuisinesID)
+            ] || null;
+
+          const region =
+            regionsById[
+              String(food.regionID)
+            ] || null;
 
           return {
 
@@ -84,11 +130,55 @@ function doGet() {
 
             dish: food.foodName,
 
-            cuisine: food.foodCuisine,
+            cuisine: cuisine
+              ? {
+                  id:
+                    String(cuisine.id),
 
-            foodOrigin: food.foodOrigin,
+                  name:
+                    cuisine.cuisineName,
 
-            region: food.foodRegion,
+                  type:
+                    cuisine.cuisineType,
+
+                  broadRegion:
+                    cuisine.broadRegion,
+
+                  primaryCountryArea:
+                    cuisine.primaryCountryArea,
+
+                  countryCodes:
+                    String(cuisine.countryCodes || "")
+                      .split(",")
+                      .map(code =>
+                        normalizeCountryCode(code)
+                      )
+                      .filter(Boolean)
+
+                }
+              : null,
+
+            region: region
+              ? {
+                  id:
+                    String(region.id),
+
+                  name:
+                    region.regionName,
+
+                  type:
+                    region.regionType,
+
+                  parentRegionID:
+                    region.parentRegionID === ""
+                      ? null
+                      : String(region.parentRegionID),
+
+                  mapKey:
+                    region.mapKey
+
+                }
+              : null,
 
             countryCode:
               normalizeCountryCode(
@@ -124,19 +214,19 @@ function doGet() {
 
             person2: {
 
-              name: "Partner",
+              name: "Danni",
 
               thoughts:
-                food.partnersThoughts,
+                food.dannisThoughts,
 
               rating:
                 toNumber(
-                  food.partnersRating
+                  food.dannisRating
                 ),
 
               haveAgain:
                 yesNoToBoolean(
-                  food.partnerHaveAgain
+                  food.danniHaveAgain
                 )
 
             },
@@ -174,9 +264,9 @@ function doGet() {
                       location.crisGoBack
                     ),
 
-                  partnerGoBack:
+                  danniGoBack:
                     yesNoToBoolean(
-                      location.partnerGoBack
+                      location.danniGoBack
                     )
 
                 }

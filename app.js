@@ -566,7 +566,7 @@ function showCountryJournal(countryName, countryCode) {
     [
       ...new Set(
         foods.map(
-          food => food.cuisine
+          food => food.cuisine?.id
         )
       )
     ];
@@ -587,7 +587,7 @@ function showCountryJournal(countryName, countryCode) {
                   ${food.dish}
                 </strong>
                 <small>
-                  ${food.cuisine}
+                  ${food.cuisine?.name}
                 </small>
               </span>
             </button>
@@ -690,9 +690,9 @@ function openJournal(id) {
     "modalContent"
   ).innerHTML = `
     <p class="entry-kicker">
-      ${item.cuisine}
+      ${item.cuisine?.name}
       ·
-      ${item.region}
+      ${item.region?.name}
     </p>
     <h2 class="entry-title">
       ${item.photo}
@@ -957,7 +957,7 @@ function updateStatistics() {
     new Set(
       experiences.map(
         experience =>
-          experience.cuisine
+          experience.cuisine?.id
       )
     );
   document.getElementById("stats").innerHTML = `
@@ -1203,7 +1203,7 @@ function openRegionExplorer() {
   const regionMap = new Map();
   experiences.forEach(experience => {
     const region =
-      experience.region?.trim();
+      experience.region?.name;
     if (!region) {
       return;
     }
@@ -1299,7 +1299,7 @@ function openRegionFoods(regionName) {
     experiences
       .filter(
         experience =>
-          experience.region?.trim() ===
+          experience.region?.name ===
           regionName
       )
       .sort((a, b) =>
@@ -1317,7 +1317,7 @@ function openRegionFoods(regionName) {
           </span>
           <span class="explorer-item-details">
             ·
-            ${experience.cuisine}
+            ${experience.cuisine?.name}
           </span>
         </button>
       `)

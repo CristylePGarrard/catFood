@@ -189,7 +189,15 @@ function doGet() {
               formatDate(food.foodDate),
 
             photo:
-              food.photoLocation,
+              food.photoFileID
+                ? {
+                    fileID:
+                      String(food.photoFileID),
+
+                    url:
+                      `https://drive.google.com/uc?export=view&id=${String(food.photoFileID)}`
+                  }
+                : null,
 
 
             person1: {

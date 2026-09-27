@@ -13,9 +13,9 @@
 // Google Sheets → Google Apps Script → JavaScript
 // ============================================================
 
+//  "https://script.google.com/macros/s/AKfycbwHMS0Vd9JsJqNhCLaJjCzt2xyON1W2fF9byYwpQBz9ficf03xSuUFElCF18UOA6mixnQ/exec";
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbwHMS0Vd9JsJqNhCLaJjCzt2xyON1W2fF9byYwpQBz9ficf03xSuUFElCF18UOA6mixnQ/exec";
-
+  "https://script.google.com/macros/s/AKfycbzEZPjdh6VhO_sc3147Tmv_FR3A3kgud70TxzRR3IU6K5EWQPW6Jlw7Yo_pRc-dAYwv/exec"
 let experiences = [];
 
 // ============================================================
@@ -746,7 +746,7 @@ function openJournal(id) {
     </div>
     <div class="food-origin-box">
       <strong>
-        🌎 Food origin
+        🍽️ About the Food
       </strong>
       <small>
         Region: ${item.region?.name}
@@ -824,60 +824,73 @@ function openJournal(id) {
       ${stars(item.restaurant.combinedRating)}
       ${item.restaurant.combinedRating ?? "Not rated"}
     </p>
-    <section class="note">
-      <div class="review-grid " style="margin-top:20px">
-        <p>
-          <strong>
-            Would Cris go back?
-          </strong>
-        ${
-          item.restaurant.cristyleGoBack === true
-            ? "Yes! ❤️"
-            : item.restaurant.cristyleGoBack=== false
-              ? "No 🙅🏽"
-              : "Maybe 🤔"
-          }
-        </p>
-        <p>
-        <strong>
-          Would Cris have it again?
-        </strong>
-        ${
-          item.person1.haveAgain === true
-            ? "Absolutely!! 😋"
-            : item.person1.haveAgain === false
-              ? "Nope! 🤢"
-              : "Probably not 🤷🏽"
-        }
-      </p>
-      </div>
-    </section>
-    <section class="note" style="margin-top:20px">
-      <div class="review-grid ">
-        <p style="padding:10px">
-          <strong>
-            Would Danni go back?
-          </strong>
-            ${
-              item.restaurant.danniGoBack === true
-                ? "Yes ❤️"
-                : item.restaurant.danniGoBack === false
-                  ? "No"
-                  : "Not sure yet"
-            }
-        </p>
-        <p>
-          <strong>
-            Would Danni have it again?
-          </strong>
-          ${
-            item.person2.haveAgain === true
-              ? "Absolutely"
-              : item.person2.haveAgain === false
-                ? "Probably not"
-                : "Not sure yet"
-            }
-        </p>
+    <section class="note" style="padding:15px">
+      <div class="review-grid">
+
+        <div class="review-person">
+          <p>
+            <strong>
+              Would Cris go back?
+            </strong>
+            <span>
+              ${
+                item.restaurant.cristyleGoBack === true
+                  ? "Yes! ❤️"
+                  : item.restaurant.cristyleGoBack === false
+                    ? "No 🙅🏽"
+                    : "Maybe 🤔"
+              }
+            </span>
+          </p>
+
+          <p>
+            <strong>
+              Would Cris have it again?
+            </strong>
+            <span>
+              ${
+                item.person1.haveAgain === true
+                  ? "Absolutely!! 😋"
+                  : item.person1.haveAgain === false
+                    ? "Nope! 🤢"
+                    : "Probably not 🤷🏽"
+              }
+            </span>
+          </p>
+        </div>
+
+        <div class="review-person">
+          <p>
+            <strong>
+              Would Danni go back?
+            </strong>
+            <span>
+              ${
+                item.restaurant.danniGoBack === true
+                  ? "Yes ❤️"
+                  : item.restaurant.danniGoBack === false
+                    ? "No"
+                    : "Not sure yet"
+              }
+            </span>
+          </p>
+
+          <p>
+            <strong>
+              Would Danni have it again?
+            </strong>
+            <span>
+              ${
+                item.person2.haveAgain === true
+                  ? "Absolutely"
+                  : item.person2.haveAgain === false
+                    ? "Probably not"
+                    : "Not sure yet"
+              }
+            </span>
+          </p>
+        </div>
+
       </div>
     </section>
   `;

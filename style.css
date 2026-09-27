@@ -269,11 +269,20 @@ main {
   height: 260px;
   margin: 0 0 25px;
   border-radius: 18px;
+  overflow: hidden;
   display: grid;
   place-items: center;
   background: linear-gradient(135deg, #d9c1a4, #9caf92);
   color: white;
   font-size: 64px;
+}
+
+.entry-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .journal-grid {

@@ -619,9 +619,7 @@ function showCountryJournal(countryName, countryCode) {
               class="food-entry-button"
               data-id="${food.id}"
             >
-              <span class="food-entry-emoji">
-                ${food.photo}
-              </span>
+              <span class="food-entry-emoji">🍽</span>
               <span class="food-entry-info">
                 <strong>
                   ${food.dish}
@@ -735,14 +733,17 @@ function openJournal(id) {
       ${item.region?.name}
     </p>
     <h2 class="entry-title">
-      ${item.photo}
       ${item.dish}
     </h2>
     <p class="entry-meta">
       ${item.date}
     </p>
     <div class="entry-photo">
-      ${item.photo}
+      ${
+        item.photo?.url
+          ? `<img src="${item.photo.url}" alt="${item.dish}">`
+          : "<span>📷 No photo</span>"
+      }
     </div>
     <div class="food-origin-box">
       <strong>

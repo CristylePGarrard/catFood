@@ -1,7 +1,6 @@
 // ============================================================
 // OUR FOOD JOURNEY
 // Prototype data
-//
 // IMPORTANT:
 // This is temporary sample data.
 // Eventually this information will come from:
@@ -10,7 +9,6 @@
 
 // ============================================================
 // FOOD JOURNEY DATA
-//
 // Data comes from:
 // Google Sheets → Google Apps Script → JavaScript
 // ============================================================
@@ -20,49 +18,37 @@ const API_URL =
 
 let experiences = [];
 
-
 // ============================================================
 // LOAD FOOD DATA
 // ============================================================
 
 async function loadExperiences() {
-
   try {
-
     const response =
       await fetch(API_URL);
-
     if (!response.ok) {
       throw new Error(
         `API request failed: ${response.status}`
       );
     }
-
     const data =
       await response.json();
-
     if (!data.success) {
       throw new Error(
         data.error || "API returned an error."
       );
     }
-
     experiences =
       data.experiences || [];
-
     console.log(
       `Loaded ${experiences.length} food experiences from Google Sheets.`
     );
-
   } catch (error) {
-
     console.error(
       "Could not load food experiences:",
       error
     );
-
   }
-
 }
 
 // ============================================================
@@ -74,9 +60,7 @@ const map = L.map("map", {
   minZoom: 2
 }).setView([25, 0], 2);
 
-
 // OpenStreetMap background
-
 L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   {
@@ -84,11 +68,9 @@ L.tileLayer(
   }
 ).addTo(map);
 
-
 // ============================================================
 // MAP COLORS
 // ============================================================
-//
 // All of the map's visual colors live here.
 //
 // If we decide later that the map should be blue, yellow,
@@ -96,7 +78,7 @@ L.tileLayer(
 // The heat-map calculations will automatically create all of
 // the colors in between.
 //
-//Our max food value should be the max value of foods per country. 
+// Our max food value should be the max value of foods per country.
 
 // ============================================================
 // GET MAXIMUM FOOD COUNT
@@ -117,38 +99,25 @@ function getMaximumFoodCount(experiences) {
 }
 
 const heatMapTheme = {
-
   // Lightest color = countries with fewer foods
   light: "#dce7d8",
-
   // Darkest color = countries with more foods
   dark: "#375c30",
-
   // Countries we haven't explored yet
   unexplored: "#cbd2ce",
-
   // Normal country borders
   border: "#536b4e",
-
   // Border when hovering over a country
   hoverBorder: "#8b5e3c"
-
 };
-
 
 // Countries we have not explored yet.
 const defaultStyle = {
-
   color: heatMapTheme.border,
-
   weight: 0.8,
-
   fillColor: heatMapTheme.unexplored,
-
   fillOpacity: 0.55
-
 };
-
 
 // ============================================================
 // COLOR CONVERSION
@@ -159,243 +128,168 @@ const defaultStyle = {
 //
 
 function hexToRgb(hex) {
-
   const cleanHex =
     hex.replace("#", "");
-
   return {
-
     r: parseInt(
       cleanHex.substring(0, 2),
       16
     ),
-
     g: parseInt(
       cleanHex.substring(2, 4),
       16
     ),
-
     b: parseInt(
       cleanHex.substring(4, 6),
       16
     )
-
   };
-
 }
 
 
 // ============================================================
 // COLOR BLENDING
 // ============================================================
-//
 // Takes two colors and returns a color somewhere between them.
 //
 // intensity = 0 → completely light
 // intensity = 1 → completely dark
-//
 
-function blendColors(
-  lightColor,
-  darkColor,
-  intensity
-) {
-
+function blendColors(lightColor, darkColor, intensity) {
   const light =
     hexToRgb(lightColor);
-
   const dark =
     hexToRgb(darkColor);
-
   const amount =
     Math.max(
       0,
       Math.min(1, intensity)
     );
-
   const r =
     Math.round(
       light.r +
       (dark.r - light.r) * amount
     );
-
   const g =
     Math.round(
       light.g +
       (dark.g - light.g) * amount
     );
-
   const b =
     Math.round(
       light.b +
       (dark.b - light.b) * amount
     );
-
   return `rgb(${r}, ${g}, ${b})`;
-
 }
-
 
 // ============================================================
 // HEAT MAP COLOR
 // ============================================================
-//
 // More foods from a country = deeper version of our theme color.
-//
 
 function getHeatMapColor(intensity) {
-
   return blendColors(
     heatMapTheme.light,
     heatMapTheme.dark,
     intensity
   );
-
 }
-
 
 // ============================================================
 // GET COUNTRY FOOD COUNT
 // ============================================================
 
 function getCountryFoodCount(countryCode) {
-
   return experiencesForCountry(
     countryCode
   ).length;
-
 }
 
 // ============================================================
 // GET COUNTRY INTENSITY
 // ============================================================
-//
 // A logarithmic scale keeps the map useful when one country
 // has many more foods than the others.
-//
 
-function getCountryIntensity(
-  foodCount,
-  maximumFoodCount
-) {
-
+function getCountryIntensity(foodCount, maximumFoodCount) {
   if (foodCount <= 0) {
-
     return 0;
-
   }
-
   if (maximumFoodCount <= 1) {
-
     return 1;
-
   }
-
   return (
     Math.log1p(foodCount) /
     Math.log1p(maximumFoodCount)
   );
-
 }
-
 
 // ============================================================
 // GET EXPLORED COUNTRY STYLE
 // ============================================================
 
-function getExploredStyle(
-  foodCount,
-  maximumFoodCount
-) {
-
+function getExploredStyle(foodCount, maximumFoodCount) {
   const intensity =
     getCountryIntensity(
       foodCount,
       maximumFoodCount
     );
-
   return {
-
     color:
       heatMapTheme.border,
-
     weight:
       intensity > 0.7
         ? 1.4
         : 1.1,
-
     fillColor:
       getHeatMapColor(
         intensity
       ),
-
     fillOpacity: 0.82
-
   };
-
 }
 
 function getCountryStyle(foodCount, maximumFoodCount){
   return foodCount > 0 ? getExploredStyle(foodCount, maximumFoodCount) : defaultStyle;
 }
 
-
 // ============================================================
 // GET HOVER STYLE
 // ============================================================
-//
 // Hovering emphasizes the country while preserving its heat-map
 // color so the color still communicates food exploration.
-//
 
-function getHoverExploredStyle(
-  foodCount,
-  maximumFoodCount
-) {
-
+function getHoverExploredStyle(foodCount, maximumFoodCount) {
   const intensity =
     getCountryIntensity(
       foodCount,
       maximumFoodCount
     );
-
   return {
-
     color:
       heatMapTheme.hoverBorder,
-
     weight: 2.5,
-
     fillColor:
       getHeatMapColor(
         intensity
       ),
-
     fillOpacity: 1
-
   };
-
 }
-
 
 // ============================================================
 // UNEXPLORED COUNTRY HOVER STYLE
 // ============================================================
 
 const hoverUnexploredStyle = {
-
   color:
     heatMapTheme.hoverBorder,
-
   weight: 1.5,
-
   fillColor:
     heatMapTheme.unexplored,
-
   fillOpacity: 0.75
-
 };
-
 
 // ============================================================
 // COUNTRY DATA
@@ -408,132 +302,85 @@ const countryLayers = new Map();
 // ============================================================
 
 function normalizeCountryCode(code) {
-
   if (!code) {
     return "";
   }
-
   return String(code)
     .trim()
     .toUpperCase();
-
 }
-
 
 // ============================================================
 // GET COUNTRY CODE FROM GEOJSON
 // ============================================================
 
 function getCountryCode(feature) {
-
   const properties =
     feature.properties || {};
-
-
   const possibleCodes = [
-
     properties["ISO3166-1-Alpha-3"],
-
     properties.ISO_A3,
-
     properties.iso_a3,
-
     properties.ADM0_A3,
-
     properties.adm0_a3,
-
     properties.SOV_A3,
-
     properties.sov_a3,
-
     properties.ISO_A3_EH,
-
     properties.iso_a3_eh
-
   ];
 
-
   for (const code of possibleCodes) {
-
     const normalizedCode =
       normalizeCountryCode(code);
-
-
     if (
       normalizedCode &&
       normalizedCode !== "-99"
     ) {
-
       return normalizedCode;
-
     }
-
   }
 
-
   return null;
-
 }
-
 
 // ============================================================
 // GET COUNTRY NAME
 // ============================================================
 
 function getCountryName(feature) {
-
   const properties =
     feature.properties || {};
-
-
   return (
-
     properties.name ||
-
     properties.NAME ||
-
     properties.ADMIN ||
-
     properties.NAME_LONG ||
-
     properties.name_long ||
-
     "Unknown"
-
   );
-
 }
-
 
 // ============================================================
 // GET FOODS FOR A COUNTRY
 // ============================================================
 
 function experiencesForCountry(countryCode) {
-
   const normalizedCode =
     normalizeCountryCode(
       countryCode
     );
-
-
   if (!normalizedCode) {
     return [];
   }
-
-
   return experiences.filter(
     experience => {
-
       return (
         normalizeCountryCode(
           experience.countryCode
         ) === normalizedCode
       );
-
     }
   );
-
 }
 
 // ============================================================
@@ -545,28 +392,23 @@ async function loadWorldMap() {
     const response = await fetch(
       "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
     );
-
     if (!response.ok) {
       throw new Error(
         "Could not load country map data."
       );
     }
-
     const data = await response.json();
-
     console.log(
       "World map loaded:",
       data.features.length,
       "countries"
     );
-
     L.geoJSON(
       data,
       {
         style: feature => {
           const countryCode = getCountryCode(feature);
           const foods = experiencesForCountry(countryCode);
-
           return foods.length > 0
             ? getExploredStyle(
                 foods.length,
@@ -574,37 +416,30 @@ async function loadWorldMap() {
               )
             : defaultStyle;
         },
-
         onEachFeature: (feature, layer) => {
           const countryCode = getCountryCode(feature);
           const countryName = getCountryName(feature);
           const foods = experiencesForCountry(countryCode);
           const foodCount = foods.length;
-
           if (countryCode) {
             countryLayers.set(countryCode, layer);
           }
-
           if (foodCount > 0) {
             const foodLabel =
               foodCount === 1
                 ? "food explored"
                 : "foods explored";
-
             const foodNames = foods
               .map(food => food.dish)
               .join(" · ");
-
             layer.bindTooltip(
               `
                 <div class="country-tooltip-content">
                   <strong>${countryName}</strong>
-
                   <span class="tooltip-count">
                     ${foodCount}
                     ${foodLabel}
                   </span>
-
                   <span class="tooltip-foods">
                     ${foodNames}
                   </span>
@@ -620,7 +455,6 @@ async function loadWorldMap() {
               `
                 <div class="country-tooltip-content">
                   <strong>${countryName}</strong>
-
                   <span class="tooltip-unexplored">
                     Not explored yet
                   </span>
@@ -632,7 +466,6 @@ async function loadWorldMap() {
               }
             );
           }
-
           layer.on("mouseover", event => {
             if (foodCount > 0) {
               const hoverStyle =
@@ -640,14 +473,12 @@ async function loadWorldMap() {
                   foodCount,
                   maximumFoodCount
                 );
-
               event.target.setStyle(hoverStyle);
             } else {
               event.target.setStyle(
                 hoverUnexploredStyle
               );
             }
-
             if (
               !L.Browser.ie &&
               !L.Browser.opera &&
@@ -656,7 +487,6 @@ async function loadWorldMap() {
               event.target.bringToFront();
             }
           });
-
           layer.on("mouseout", event => {
             if (foodCount > 0) {
               const styleTile =
@@ -664,13 +494,11 @@ async function loadWorldMap() {
                   foodCount,
                   maximumFoodCount
                 );
-
               event.target.setStyle(styleTile);
             } else {
               event.target.setStyle(defaultStyle);
             }
           });
-
           layer.on("click", () => {
             if (foodCount > 0) {
               showCountryJournal(
@@ -686,11 +514,9 @@ async function loadWorldMap() {
         }
       }
     ).addTo(map);
-
     console.log(
       "Countries represented in our food journey:"
     );
-
     experiences.forEach(experience => {
       console.log(
         experience.dish,
@@ -698,13 +524,11 @@ async function loadWorldMap() {
         experience.countryCode
       );
     });
-
   } catch (error) {
     console.error(
       "Could not load world map:",
       error
     );
-
     document
       .getElementById("map")
       .insertAdjacentHTML(
@@ -732,19 +556,12 @@ async function loadWorldMap() {
 // COUNTRY JOURNAL
 // ============================================================
 
-function showCountryJournal(
-  countryName,
-  countryCode
-) {
-
+function showCountryJournal(countryName, countryCode) {
   const foods =
     experiencesForCountry(
       countryCode
     );
-
-
   // Get unique cuisines
-
   const cuisines =
     [
       ...new Set(
@@ -753,284 +570,182 @@ function showCountryJournal(
         )
       )
     ];
-
-
   const foodList =
     foods
       .map(
         food => {
-
           return `
             <button
               class="food-entry-button"
               data-id="${food.id}"
             >
-
               <span class="food-entry-emoji">
                 ${food.photo}
               </span>
-
               <span class="food-entry-info">
-
                 <strong>
                   ${food.dish}
                 </strong>
-
                 <small>
                   ${food.cuisine}
                 </small>
-
               </span>
-
             </button>
           `;
-
         }
       )
       .join("");
-
-
   document.getElementById(
     "modalContent"
   ).innerHTML = `
-
     <p class="entry-kicker">
       OUR FOOD JOURNEY
     </p>
-
     <h2 class="entry-title">
       🌎 ${countryName}
     </h2>
-
     <p class="entry-meta">
-
       ${foods.length}
-
       ${foods.length === 1
         ? "food"
         : "foods"}
-
       explored
-
       ·
-
       ${cuisines.length}
-
       ${cuisines.length === 1
         ? "cuisine"
         : "cuisines"}
-
     </p>
-
-
     <div class="country-summary">
-
       <p>
         These are the foods from this part of the
         world that we've explored so far.
       </p>
-
     </div>
-
-
     <div class="food-list">
-
       ${foodList}
-
     </div>
-
   `;
-
-
   // Connect food buttons
-
   document
     .querySelectorAll(
       ".food-entry-button"
     )
     .forEach(
       button => {
-
         button.addEventListener(
           "click",
           () => {
-
             openJournal(
               button.dataset.id
             );
-
           }
         );
-
       }
     );
-
-
   openModal();
-
 }
-
 
 // ============================================================
 // UNEXPLORED COUNTRY
 // ============================================================
 
-function showUnexploredCountry(
-  countryName
-) {
-
+function showUnexploredCountry(countryName) {
   document.getElementById(
     "modalContent"
   ).innerHTML = `
-
     <p class="entry-kicker">
       NOT EXPLORED YET
     </p>
-
     <h2 class="entry-title">
       🌎 ${countryName}
     </h2>
-
     <p class="entry-meta">
       We haven't recorded any foods from here yet.
     </p>
-
     <div class="country-summary">
-
       <p>
         Maybe this is somewhere our food journey
         will take us someday.
       </p>
-
     </div>
-
   `;
-
-
   openModal();
-
 }
-
 
 // ============================================================
 // FOOD JOURNAL ENTRY
 // ============================================================
 
 function openJournal(id) {
-
   const item =
     experiences.find(
       experience =>
         experience.id === id
     );
-
-
   if (!item) {
     return;
   }
-
-
   document.getElementById(
     "modalContent"
   ).innerHTML = `
-
     <p class="entry-kicker">
-
       ${item.cuisine}
-
       ·
-
       ${item.region}
-
     </p>
-
-
     <h2 class="entry-title">
-
       ${item.photo}
-
       ${item.dish}
-
     </h2>
-
-
     <p class="entry-meta">
-
       ${item.date}
-
     </p>
-
-
     <div class="entry-photo">
-
       ${item.photo}
-
     </div>
-
-
     <div class="food-origin-box">
-
       <strong>
         🌎 Food origin
       </strong>
-
       <p>
         ${item.foodOrigin}
       </p>
-
       <small>
         Region: ${item.region}
       </small>
-
     </div>
-
-
     <div class="journal-grid">
-
       <section class="note">
-
         <h3>
           ${item.person1.name}'s thoughts
         </h3>
-
         <p>
           ${item.person1.thoughts}
         </p>
-
         <p
           class="rating"
           style="margin-top:12px"
         >
           ${stars(item.person1.rating)}
         </p>
-
       </section>
-
-
       <section class="note">
-
         <h3>
           ${item.person2.name}'s thoughts
         </h3>
-
         <p>
           ${item.person2.thoughts}
         </p>
-
         <p
           class="rating"
           style="margin-top:12px"
         >
           ${stars(item.person2.rating)}
         </p>
-
       </section>
-
     </div>
-
-
     <section class="restaurant-box">
-
     <p class="entry-kicker">
       WHERE WE EXPERIENCED IT
     </p>
@@ -1061,7 +776,6 @@ function openJournal(id) {
         `
         : ""
     }
-    
     <p>
       <strong>
         Rating
@@ -1126,12 +840,8 @@ function openJournal(id) {
       </div>
     </section>
   `;
-
-
   openModal();
-
 }
-
 
 // ============================================================
 // STAR RATINGS
@@ -1141,50 +851,34 @@ function stars(value) {
 
   const full =
     Math.floor(value);
-
-
   const half =
     value % 1 !== 0;
-
-
   return (
-
     "★".repeat(full) +
-
     (half ? "½" : "") +
-
     "☆".repeat(
       5 -
       full -
       (half ? 1 : 0)
     )
-
   );
-
 }
-
 
 // ============================================================
 // MODAL
 // ============================================================
 
 function openModal() {
-
   document.getElementById(
     "modalBackdrop"
   ).hidden = false;
-
 }
 
-
 function closeModal() {
-
   document.getElementById(
     "modalBackdrop"
   ).hidden = true;
-
 }
-
 
 document
   .getElementById(
@@ -1195,7 +889,6 @@ document
     closeModal
   );
 
-
 document
   .getElementById(
     "modalBackdrop"
@@ -1203,35 +896,25 @@ document
   .addEventListener(
     "click",
     event => {
-
       if (
         event.target.id ===
         "modalBackdrop"
       ) {
-
         closeModal();
-
       }
-
     }
   );
-
 
 document.addEventListener(
   "keydown",
   event => {
-
     if (
       event.key === "Escape"
     ) {
-
       closeModal();
-
     }
-
   }
 );
-
 
 // ============================================================
 // RESET MAP
@@ -1244,12 +927,10 @@ document
   .addEventListener(
     "click",
     () => {
-
       map.setView(
         [25, 0],
         2
       );
-
     }
   );
 
@@ -1265,7 +946,6 @@ function updateStatistics() {
           experience.countryCode
       )
     );
-
   const uniqueRegions =
     new Set(
       experiences.map(
@@ -1273,7 +953,6 @@ function updateStatistics() {
           experience.region
       )
     );
-
   const uniqueCuisines =
     new Set(
       experiences.map(
@@ -1281,7 +960,6 @@ function updateStatistics() {
           experience.cuisine
       )
     );
-
   document.getElementById("stats").innerHTML = `
     <div
       class="stat stat-clickable"
@@ -1292,7 +970,6 @@ function updateStatistics() {
       <span class="stat-number">${experiences.length}</span>
       <span class="stat-label">Foods Tried</span>
     </div>
-
   <div
     class="stat stat-clickable"
     id="countriesStat"
@@ -1302,37 +979,40 @@ function updateStatistics() {
     <span class="stat-number">${uniqueCountries.size}</span>
     <span class="stat-label">Countries</span>
   </div>
-
-    <div class="stat">
+    <div
+      class="stat stat-clickable"
+      id="regionsStat"
+      role="button"
+      tabindex="0"
+    >
       <span class="stat-number">${uniqueRegions.size}</span>
       <span class="stat-label">Regions</span>
     </div>
-
     <div class="stat">
       <span class="stat-number">${uniqueCuisines.size}</span>
       <span class="stat-label">Cuisines</span>
     </div>
   `;
-
   document
     .getElementById("foodsStat")
     .addEventListener("click", openFoodExplorer);
   document
     .getElementById("countriesStat")
     .addEventListener("click", openCountryExplorer);
+    document
+      .getElementById("regionsStat")
+      .addEventListener("click", openRegionExplorer);
 }
+
 // ============================================================
 // FOOD EXPLORER
 // ============================================================
 
 function centerMapOnCountry(countryCode) {
-
   const normalizedCode =
     normalizeCountryCode(countryCode);
-
   const layer =
     countryLayers.get(normalizedCode);
-
   if (!layer) {
     console.warn(
       "Could not find map layer for:",
@@ -1340,10 +1020,8 @@ function centerMapOnCountry(countryCode) {
     );
     return;
   }
-
   const bounds =
     layer.getBounds();
-
   map.fitBounds(bounds, {
     padding: [40, 40],
     maxZoom: 5
@@ -1351,13 +1029,11 @@ function centerMapOnCountry(countryCode) {
 }
 
 function openFoodExplorer() {
-  
   const sortedExperiences =
     [...experiences].sort(
       (a, b) =>
         a.dish.localeCompare(b.dish)
     );
-
   const foodList =
     sortedExperiences
       .map(
@@ -1369,7 +1045,6 @@ function openFoodExplorer() {
             <span class="explorer-item-name">
               ${experience.dish}
             </span>
-
             <span class="explorer-item-details">
               ·
               ${experience.region}
@@ -1378,52 +1053,39 @@ function openFoodExplorer() {
         `
       )
       .join("");
-
   document.getElementById(
     "modalContent"
   ).innerHTML = `
-
     <div class="explorer">
-
       <p class="entry-kicker">
         OUR FOOD JOURNEY
       </p>
-
       <h2>
         🍜 Foods We've Tried
       </h2>
-
       <p class="explorer-intro">
         We've explored
         ${experiences.length}
         different foods so far.
       </p>
-
       <div class="explorer-list">
         ${foodList}
       </div>
-
     </div>
-
   `;
-
   openModal();
-
   document
     .querySelectorAll(".explorer-item")
     .forEach(item => {
       item.addEventListener("click", () => {
-
         const foodId =
           item.dataset.foodId;
-
         const experience =
           experiences.find(
             experience =>
               String(experience.id) ===
               String(foodId)
           );
-
         if (!experience) {
           console.error(
             "Food not found:",
@@ -1431,43 +1093,35 @@ function openFoodExplorer() {
           );
           return;
         }
-
         console.log(
           "Selected food:",
           experience
         );
-
         closeModal();
-
         centerMapOnCountry(
           experience.countryCode
         );
       });
     });
 }
+
 // ============================================================
 // COUNTRY EXPLORER
 // ============================================================
 
 function openCountryExplorer() {
-
   const countryMap = new Map();
-
   experiences.forEach(experience => {
-
     const countryCode =
       normalizeCountryCode(
         experience.countryCode
       );
-
     if (!countryCode) {
       return;
     }
-
   if (!countryMap.has(countryCode)) {
     const layer =
       countryLayers.get(countryCode);
-
     countryMap.set(countryCode, {
       code: countryCode,
       name: layer
@@ -1476,16 +1130,13 @@ function openCountryExplorer() {
       foodCount: 0
     });
   }
-
     countryMap.get(countryCode).foodCount++;
   });
-
   const countries =
     [...countryMap.values()]
       .sort((a, b) =>
         a.name.localeCompare(b.name)
       );
-
   const countryList =
     countries
       .map(country => `
@@ -1496,7 +1147,6 @@ function openCountryExplorer() {
           <span class="explorer-item-name">
             ${country.name}
           </span>
-
           <span class="explorer-item-details">
             ${country.foodCount}
             ${country.foodCount === 1 ? "food" : "foods"}
@@ -1504,79 +1154,243 @@ function openCountryExplorer() {
         </button>
       `)
       .join("");
-
   document.getElementById(
     "modalContent"
   ).innerHTML = `
-
     <div class="explorer">
-
       <p class="entry-kicker">
         OUR FOOD JOURNEY
       </p>
-
       <h2>
         🌎 Countries We've Explored
       </h2>
-
       <p class="explorer-intro">
         We've explored
         ${countries.length}
         countries so far.
       </p>
-
       <div class="explorer-list">
         ${countryList}
       </div>
-
     </div>
-
   `;
-
   openModal();
-
   document
     .querySelectorAll(".explorer-item")
     .forEach(item => {
-
       item.addEventListener(
         "click",
         () => {
-
           const countryCode =
             item.dataset.countryCode;
-
           console.log(
             "Selected country:",
             countryCode
           );
-
           closeModal();
-
           centerMapOnCountry(
             countryCode
           );
         }
       );
-
     });
-
 }
+// ============================================================
+// REGIONS EXPLORER
+// ============================================================
+
+function openRegionExplorer() {
+  const regionMap = new Map();
+  experiences.forEach(experience => {
+    const region =
+      experience.region?.trim();
+    if (!region) {
+      return;
+    }
+    if (!regionMap.has(region)) {
+      regionMap.set(region, {
+        name: region,
+        foodCount: 0,
+        countries: new Set()
+      });
+    }
+    const regionData =
+      regionMap.get(region);
+    regionData.foodCount++;
+    const countryCode =
+      normalizeCountryCode(
+        experience.countryCode
+      );
+    if (countryCode) {
+      regionData.countries.add(
+        countryCode
+      );
+    }
+  });
+  const regions =
+    [...regionMap.values()]
+      .sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+  const regionList =
+    regions
+      .map(region => `
+        <button
+          class="explorer-item"
+          data-region="${region.name}"
+        >
+          <span class="explorer-item-name">
+            ${region.name}
+          </span>
+          <span class="explorer-item-details">
+            ·
+            ${region.foodCount}
+            ${region.foodCount === 1
+              ? "food"
+              : "foods"}
+          </span>
+        </button>
+      `)
+      .join("");
+  document.getElementById(
+    "modalContent"
+  ).innerHTML = `
+    <div class="explorer">
+      <p class="entry-kicker">
+        OUR FOOD JOURNEY
+      </p>
+      <h2>
+        🗺️ Regions We've Explored
+      </h2>
+      <p class="explorer-intro">
+        We've explored
+        ${regions.length}
+        regions so far.
+      </p>
+      <div class="explorer-list">
+        ${regionList}
+      </div>
+    </div>
+  `;
+  openModal();
+  document
+    .querySelectorAll(".explorer-item")
+    .forEach(item => {
+      item.addEventListener(
+        "click",
+        () => {
+          const regionName =
+            item.dataset.region;
+          console.log(
+            "Selected region:",
+            regionName
+          );
+          closeModal();
+          openRegionFoods(
+            regionName
+          );
+        }
+      );
+    });
+}
+
+function openRegionFoods(regionName) {
+  const regionExperiences =
+    experiences
+      .filter(
+        experience =>
+          experience.region?.trim() ===
+          regionName
+      )
+      .sort((a, b) =>
+        a.dish.localeCompare(b.dish)
+      );
+  const foodList =
+    regionExperiences
+      .map(experience => `
+        <button
+          class="explorer-item"
+          data-food-id="${experience.id}"
+        >
+          <span class="explorer-item-name">
+            ${experience.dish}
+          </span>
+          <span class="explorer-item-details">
+            ·
+            ${experience.cuisine}
+          </span>
+        </button>
+      `)
+      .join("");
+  document.getElementById(
+    "modalContent"
+  ).innerHTML = `
+    <div class="explorer">
+      <p class="entry-kicker">
+        ${regionName}
+      </p>
+      <h2>
+        🍜 Foods We've Tried
+      </h2>
+      <p class="explorer-intro">
+        We've tried
+        ${regionExperiences.length}
+        ${regionExperiences.length === 1
+          ? "food"
+          : "foods"}
+        from this region.
+      </p>
+      <div class="explorer-list">
+        ${foodList}
+      </div>
+    </div>
+  `;
+  openModal();
+  document
+    .querySelectorAll(".explorer-item")
+    .forEach(item => {
+      item.addEventListener(
+        "click",
+        () => {
+          const foodId =
+            item.dataset.foodId;
+          const experience =
+            experiences.find(
+              experience =>
+                String(experience.id) ===
+                String(foodId)
+            );
+          if (!experience) {
+            console.error(
+              "Food not found:",
+              foodId
+            );
+            return;
+          }
+          console.log(
+            "Selected regional food:",
+            experience
+          );
+          closeModal();
+          centerMapOnCountry(
+            experience.countryCode
+          );
+        }
+      );
+    });
+}
+
 // ============================================================
 
 async function initializeApp() {
   await loadExperiences();
-
   maximumFoodCount =
     getMaximumFoodCount(experiences);
-
   console.log(
     "Maximum food count:",
     maximumFoodCount
   );
   updateStatistics();
-
   await loadWorldMap();
 }
-
 initializeApp();

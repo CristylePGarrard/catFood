@@ -414,11 +414,15 @@ function experiencesForCountry(countryCode) {
   }
   return experiences.filter(
     experience => {
-      return (
-        normalizeCountryCode(
-          experience.countryCode
-        ) === normalizedCode
-      );
+      const countryCodes =
+        String(
+            experience.countryCode || ""
+        )
+        .split(",")
+        .map(code => normalizeCountryCode(code)
+        )
+        .filter(Boolean);
+      return countryCodes.includes(normalizedCode);
     }
   );
 }
@@ -1165,33 +1169,50 @@ function openFoodExplorer() {
 // ============================================================
 
 function openCountryExplorer() {
+
   const countryMap = new Map();
+
   experiences.forEach(experience => {
-    const countryCode =
-      normalizeCountryCode(
-        experience.countryCode
-      );
-    if (!countryCode) {
-      return;
-    }
-  if (!countryMap.has(countryCode)) {
-    const layer =
-      countryLayers.get(countryCode);
-    countryMap.set(countryCode, {
-      code: countryCode,
-      name: layer
-        ? getCountryName(layer.feature)
-        : countryCode,
-      foodCount: 0
+
+    const countryCodes =
+      String(
+        experience.countryCode || ""
+      )
+        .split(",")
+        .map(code =>
+          normalizeCountryCode(code)
+        )
+        .filter(Boolean);
+
+    countryCodes.forEach(countryCode => {
+
+      if (!countryMap.has(countryCode)) {
+
+        const layer =
+          countryLayers.get(countryCode);
+
+        countryMap.set(countryCode, {
+          code: countryCode,
+          name: layer
+            ? getCountryName(layer.feature)
+            : countryCode,
+          foodCount: 0
+        });
+
+      }
+
+      countryMap.get(countryCode).foodCount++;
+
     });
-  }
-    countryMap.get(countryCode).foodCount++;
+
   });
+
   const countries =
     [...countryMap.values()]
       .sort((a, b) =>
         a.name.localeCompare(b.name)
       );
+
   const countryList =
     countries
       .map(country => `
@@ -1209,6 +1230,7 @@ function openCountryExplorer() {
         </button>
       `)
       .join("");
+
   document.getElementById(
     "modalContent"
   ).innerHTML = `
@@ -1229,27 +1251,38 @@ function openCountryExplorer() {
       </div>
     </div>
   `;
+
   openModal();
+
   document
     .querySelectorAll(".explorer-item")
     .forEach(item => {
+
       item.addEventListener(
         "click",
         () => {
+
           const countryCode =
             item.dataset.countryCode;
+
           console.log(
             "Selected country:",
             countryCode
           );
+
           closeModal();
+
           centerMapOnCountry(
             countryCode
           );
+
         }
       );
+
     });
+
 }
+
 // ============================================================
 // REGIONS EXPLORER
 // ============================================================

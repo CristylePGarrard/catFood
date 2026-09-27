@@ -47,6 +47,22 @@ Do not open `index.html` directly with `file://` because the browser will block 
                                     │   LEAFLET  │
                                     │    MAP     │
                                     └────────────┘
+
+```
+What food did we try?
+→ Dosa
+What cuisine?
+→ Indian
+Where is this food associated with?
+→ South India
+Does that region already exist?
+→ Yes → reuse it
+If not?
+→ Create region → draw/save geometry
+Restaurant?
+→ Separate location information
+```
+
 ---
 
 ```

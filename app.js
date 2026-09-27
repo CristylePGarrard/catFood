@@ -298,6 +298,46 @@ const hoverUnexploredStyle = {
 const countryLayers = new Map();
 
 // ============================================================
+// REGION DATA
+// ============================================================
+
+const regionLayers = new Map();
+
+// ============================================================
+// GET FOODS FOR A REGION
+// ============================================================
+
+function experiencesForRegion(regionID) {
+
+  if (regionID === null || regionID === undefined) {
+    return [];
+  }
+
+  return experiences.filter(
+    experience => {
+
+      return String(
+        experience.region?.id
+      ) === String(regionID);
+
+    }
+  );
+
+}
+
+// ============================================================
+// GET REGION FOOD COUNT
+// ============================================================
+
+function getRegionFoodCount(regionID) {
+
+  return experiencesForRegion(
+    regionID
+  ).length;
+
+}
+
+// ============================================================
 // NORMALIZE COUNTRY CODE
 // ============================================================
 
@@ -708,12 +748,13 @@ function openJournal(id) {
       <strong>
         🌎 Food origin
       </strong>
-      <p>
-        ${item.foodOrigin}
-      </p>
       <small>
-        Region: ${item.region}
+        Region: ${item.region?.name}
       </small>
+
+      <p>
+        ${item.aboutFood || ""}
+      </p>
     </div>
     <div class="journal-grid">
       <section class="note">
@@ -950,7 +991,7 @@ function updateStatistics() {
     new Set(
       experiences.map(
         experience =>
-          experience.region
+          experience.region?.id
       )
     );
   const uniqueCuisines =
@@ -1047,7 +1088,7 @@ function openFoodExplorer() {
             </span>
             <span class="explorer-item-details">
               ·
-              ${experience.region}
+              ${experience.region?.name}
             </span>
           </button>
         `

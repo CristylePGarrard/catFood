@@ -17,6 +17,38 @@ Do not open `index.html` directly with `file://` because the browser will block 
 
 ---
 
+---
+
+                         ┌──────────────┐
+                         │    FOOD      │
+                         └──────┬───────┘
+                                │
+                    ┌───────────┴───────────┐
+                    ↓                       ↓
+             ┌──────────────┐        ┌──────────────┐
+             │   CUISINE    │        │    REGION    │
+             │              │        │              │
+             │ Indian       │        │ South India  │
+             │ Vietnamese   │        │ Thailand     │
+             │ Salvadoran   │        │ NYC          │
+             └──────────────┘        └──────┬───────┘
+                                            │
+                                            ↓
+                                  ┌──────────────────┐
+                                  │ REGION GEOMETRY  │
+                                  │                  │
+                                  │ polygon          │
+                                  │ multipolygon     │
+                                  │ GeoJSON           │
+                                  └────────┬─────────┘
+                                           │
+                                           ↓
+                                    ┌────────────┐
+                                    │   LEAFLET  │
+                                    │    MAP     │
+                                    └────────────┘
+---
+
 ```
 🍜 Foods Tried
 → What have we eaten?

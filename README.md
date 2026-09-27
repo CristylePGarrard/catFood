@@ -16,6 +16,19 @@ http://localhost:8000
 Do not open `index.html` directly with `file://` because the browser will block the map data request.
 
 ---
+
+```
+🍜 Foods Tried
+→ What have we eaten?
+🌎 Countries
+→ Where in the world have we explored?
+🗺️ Regions
+→ What cultural/geographic areas have we explored?
+🥢 Cuisines
+→ What culinary traditions have we explored?
+```
+
+---
 ````
                   GOOGLE SHEETS
                        │

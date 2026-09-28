@@ -1,5 +1,7 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbzEZPjdh6VhO_sc3147Tmv_FR3A3kgud70TxzRR3IU6K5EWQPW6Jlw7Yo_pRc-dAYwv/exec";
+const WRITE_API_URL =
+  "https://script.google.com/macros/s/AKfycbzHAjeoibL9UgJEQ_yUj_PWlTeT49a3Sq6CIi9Kc3wz1r_jzTVLekxeu3u8ybSLdd0/exec";
 
 const map =
   L.map("map").setView(
@@ -188,3 +190,111 @@ async function loadRegions() {
 
 }
 loadRegions();
+async function saveGeometry() {
+
+  const regionSelect =
+    document.getElementById(
+      "regionSelect"
+    );
+
+  const regionID =
+    regionSelect.value;
+
+  if (!regionID) {
+
+    alert(
+      "Please select a region before saving."
+    );
+
+    return;
+
+  }
+
+  if (!currentGeometry) {
+
+    alert(
+      "Please draw a region boundary before saving."
+    );
+
+    return;
+
+  }
+
+  const payload = {
+
+    regionID: regionID,
+
+    geometry: currentGeometry,
+
+    source: "drawn",
+
+    notes: ""
+
+  };
+
+  try {
+
+    const response =
+      await fetch(
+        WRITE_API_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "text/plain;charset=utf-8"
+          },
+
+          body:
+            JSON.stringify(
+              payload
+            )
+        }
+      );
+
+    if (!response.ok) {
+
+      throw new Error(
+        `Save request failed: ${response.status}`
+      );
+
+    }
+
+    const data =
+      await response.json();
+
+    if (!data.success) {
+
+      throw new Error(
+        data.error ||
+        "The geometry could not be saved."
+      );
+
+    }
+
+    alert(
+      "Geometry saved successfully."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Could not save geometry:",
+      error
+    );
+
+    alert(
+      `Could not save geometry: ${error.message}`
+    );
+
+  }
+
+}
+
+
+document
+  .getElementById("saveButton")
+  .addEventListener(
+    "click",
+    saveGeometry
+  );

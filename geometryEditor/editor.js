@@ -1,3 +1,6 @@
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzEZPjdh6VhO_sc3147Tmv_FR3A3kgud70TxzRR3IU6K5EWQPW6Jlw7Yo_pRc-dAYwv/exec";
+
 const map =
   L.map("map").setView(
     [20, 0],
@@ -117,3 +120,71 @@ map.on(
 
   }
 );
+
+async function loadRegions() {
+
+  const regionSelect =
+    document.getElementById(
+      "regionSelect"
+    );
+
+  try {
+
+    const response =
+      await fetch(API_URL);
+
+    if (!response.ok) {
+      throw new Error(
+        `API request failed: ${response.status}`
+      );
+    }
+
+    const data =
+      await response.json();
+
+    if (
+      !data.success ||
+      !Array.isArray(data.regions)
+    ) {
+      throw new Error(
+        "API did not return regions."
+      );
+    }
+
+    data.regions
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(b.name)
+      )
+      .forEach(
+        region => {
+
+          const option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            region.id;
+
+          option.textContent =
+            region.name;
+
+          regionSelect.appendChild(
+            option
+          );
+
+        }
+      );
+
+  } catch (error) {
+
+    console.error(
+      "Could not load regions:",
+      error
+    );
+
+  }
+
+}
+loadRegions();

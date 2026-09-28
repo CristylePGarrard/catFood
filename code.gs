@@ -2,6 +2,7 @@ const FOOD_SHEET_NAME = "food";
 const LOCATION_SHEET_NAME = "location";
 const CUISINE_SHEET_NAME = "cuisines";
 const REGION_SHEET_NAME = "regions";
+const REGION_GEOMETRY_SHEET_NAME = "regionGeometry";
 
 /**
  * Main API endpoint.
@@ -20,26 +21,39 @@ function doGet() {
       spreadsheet.getSheetByName(CUISINE_SHEET_NAME);
     const regionSheet =
       spreadsheet.getSheetByName(REGION_SHEET_NAME);
+    const regionGeometrySheet =
+      spreadsheet.getSheetByName(REGION_GEOMETRY_SHEET_NAME);
+
     if (!foodSheet) {
       throw new Error(
         `Could not find sheet: ${FOOD_SHEET_NAME}`
       );
     }
+
     if (!locationSheet) {
       throw new Error(
         `Could not find sheet: ${LOCATION_SHEET_NAME}`
       );
     }
+
     if (!cuisineSheet) {
       throw new Error(
         `Could not find sheet: ${CUISINE_SHEET_NAME}`
       );
     }
+
     if (!regionSheet) {
      throw new Error(
       `Could not find sheet: ${REGION_SHEET_NAME}`
       );
     }
+
+      if (!regionGeometrySheet) {
+     throw new Error(
+      `Could not find sheet: ${REGION_GEOMETRY_SHEET_NAME}`
+      );
+    }
+
     const foods =
       sheetToObjects(foodSheet);
     const locations =
@@ -48,6 +62,8 @@ function doGet() {
       sheetToObjects(cuisineSheet);
     const regions =
       sheetToObjects(regionSheet);
+    const regionGeometry =
+      sheetToObjects(regionGeometrySheet);
     /*
      * Turn locations into a lookup object.
      *
@@ -220,6 +236,16 @@ function doGet() {
             ? null
             : String(region.parentRegionID),
         mapKey: region.mapKey
+      })),
+      regionGeometry: regionGeometry.map(geometry => ({
+        id: String(geometry.id),
+        regionID: String(geometry.regionID),
+        geometry: geometry.geometry,
+        geometryType: geometry.geometryType,
+        source: geometry.source,
+        createdAt: geometry.createdAt,
+        updatedAt: geometry.updatedAt,
+        notes: geometry.notes
       })),
       count: experiences.length
     });

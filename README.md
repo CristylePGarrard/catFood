@@ -1,7 +1,7 @@
 # catFood
 A site for my partner and I to record our food experiences and work towards our goal of trying foods from all over the world 😃😋 
 
-[Go to App](https://cristylepgarrard.github.io/catFood/) 
+[Go to App](https://cristylepgarrard.github.io/catsFood/) 
 
 ---
 ## Run locally
